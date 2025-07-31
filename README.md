@@ -37,12 +37,12 @@ DB_PASSWORD=
 ### 3. Payment Gateways
 ```env
 # Stripe
-STRIPE_KEY=your_stripe_publishable_key
-STRIPE_SECRET=your_stripe_secret_key
+STRIPE_KEY=pk_test_51OqXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+STRIPE_SECRET=sk_test_51OqXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 # PayPal
-PAYPAL_CLIENT_ID=your_paypal_client_id
-PAYPAL_CLIENT_SECRET=your_paypal_client_secret
+PAYPAL_CLIENT_ID=your_paypal_client_id_here
+PAYPAL_CLIENT_SECRET=your_paypal_client_secret_here
 PAYPAL_SANDBOX=true
 ```
 
@@ -72,9 +72,22 @@ php artisan serve
 | POST | `/api/checkout/stripe` | ✅ |
 | POST | `/api/checkout/paypal` | ✅ |
 
-## Usage Examples
+## API Usage Examples
 
-### Register User
+### 1. Register User
+**Endpoint:** `POST /api/register`
+
+**Request Body:**
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "password_confirmation": "password123"
+}
+```
+
+**cURL:**
 ```bash
 curl -X POST http://localhost:8000/api/register \
   -H "Content-Type: application/json" \
@@ -86,7 +99,18 @@ curl -X POST http://localhost:8000/api/register \
   }'
 ```
 
-### Login
+### 2. Login User
+**Endpoint:** `POST /api/login`
+
+**Request Body:**
+```json
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+**cURL:**
 ```bash
 curl -X POST http://localhost:8000/api/login \
   -H "Content-Type: application/json" \
@@ -96,12 +120,53 @@ curl -X POST http://localhost:8000/api/login \
   }'
 ```
 
-### Get Plans
+**Response:**
+```json
+{
+  "access_token": "1|abc123...",
+  "token_type": "Bearer"
+}
+```
+
+### 3. Get Plans
+**Endpoint:** `GET /api/plans`
+
+**cURL:**
 ```bash
 curl -X GET http://localhost:8000/api/plans
 ```
 
-### Stripe Checkout
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "name": "Basic Plan",
+    "price": "9.99",
+    "currency": "USD",
+    "interval": "monthly"
+  },
+  {
+    "id": 2,
+    "name": "Pro Plan",
+    "price": "99.99",
+    "currency": "USD",
+    "interval": "yearly"
+  }
+]
+```
+
+### 4. Stripe Checkout
+**Endpoint:** `POST /api/checkout/stripe`
+
+**Request Body:**
+```json
+{
+  "plan_id": 1
+}
+```
+
+**cURL:**
 ```bash
 curl -X POST http://localhost:8000/api/checkout/stripe \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -109,12 +174,45 @@ curl -X POST http://localhost:8000/api/checkout/stripe \
   -d '{"plan_id": 1}'
 ```
 
-### PayPal Checkout
+**Response:**
+```json
+{
+  "url": "https://checkout.stripe.com/pay/cs_test_..."
+}
+```
+
+### 5. PayPal Checkout
+**Endpoint:** `POST /api/checkout/paypal`
+
+**Request Body:**
+```json
+{
+  "plan_id": 1
+}
+```
+
+**cURL:**
 ```bash
 curl -X POST http://localhost:8000/api/checkout/paypal \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"plan_id": 1}'
+```
+
+**Response:**
+```json
+{
+  "url": "https://www.sandbox.paypal.com/checkoutnow?token=..."
+}
+```
+
+### 6. Logout
+**Endpoint:** `POST /api/logout`
+
+**cURL:**
+```bash
+curl -X POST http://localhost:8000/api/logout \
+  -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 ## Testing with Postman
