@@ -72,6 +72,205 @@ php artisan serve
 | POST | `/api/checkout/stripe` | ✅ |
 | POST | `/api/checkout/paypal` | ✅ |
 
+## Postman Collection
+
+### Import Collection
+1. Download the Postman collection: [Subscription API Collection](https://github.com/yourusername/subscription-api/blob/main/Subscription_API.postman_collection.json)
+2. Open Postman
+3. Click "Import" → "Upload Files" → Select the JSON file
+4. Or copy the collection JSON below and import via "Raw text"
+
+### Collection JSON
+```json
+{
+  "info": {
+    "name": "Laravel Subscription API",
+    "description": "Complete API collection for Laravel 11 Subscription API with Stripe and PayPal integration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('auth_token', response.access_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "login"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Plans",
+      "item": [
+        {
+          "name": "Get All Plans",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/plans",
+              "host": ["{{base_url}}"],
+              "path": ["api", "plans"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Checkout",
+      "item": [
+        {
+          "name": "Stripe Checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/checkout/stripe",
+              "host": ["{{base_url}}"],
+              "path": ["api", "checkout", "stripe"]
+            }
+          }
+        },
+        {
+          "name": "PayPal Checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/checkout/paypal",
+              "host": ["{{base_url}}"],
+              "path": ["api", "checkout", "paypal"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### How to Use the Collection
+
+1. **Set Environment Variables:**
+   - `base_url`: `http://localhost:8000` (or your server URL)
+   - `auth_token`: Will be automatically set after login
+
+2. **Testing Flow:**
+   - **Register User** → Create a new account
+   - **Login User** → Get authentication token (automatically saved)
+   - **Get All Plans** → View available subscription plans
+   - **Stripe/PayPal Checkout** → Test payment integration
+   - **Logout** → Clear authentication token
+
+3. **Authentication:**
+   - The login request automatically saves the token
+   - All protected endpoints use the saved token
+   - No need to manually copy-paste tokens
+
 ## API Usage Examples
 
 ### 1. Register User
@@ -217,9 +416,11 @@ curl -X POST http://localhost:8000/api/logout \
 
 ## Testing with Postman
 
-1. Register/Login to get access token
-2. Set Authorization Header: `Bearer YOUR_TOKEN`
-3. Test protected endpoints with valid `plan_id`
+1. Import the collection above
+2. Set `base_url` variable to your server URL
+3. Run the requests in order (Register → Login → Test endpoints)
+4. The login request automatically saves your token
+5. All protected endpoints will use the saved token
 
 ## Project Structure
 ```
@@ -251,6 +452,11 @@ database/
 - Verify API keys are correct
 - Use sandbox keys for development
 - Check webhook configuration if needed
+
+### Postman Issues
+- Ensure `base_url` variable is set correctly
+- Check that login request runs successfully to set token
+- Verify all headers are included in requests
 
 ## License
 MIT License
